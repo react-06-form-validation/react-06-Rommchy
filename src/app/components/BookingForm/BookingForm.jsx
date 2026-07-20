@@ -1,24 +1,39 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { createBookingSchema } from '../../schemas/bookingSchema';
-import ErrorMessage from '../ErrorMessage/ErrorMessage';
-import styles from './BookingForm.module.css';
+import { createBookingSchema } from "../../schemas/bookingSchema";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import styles from "./BookingForm.module.css";
 
 export default function BookingForm() {
   const [timeSlots, setTimeSlots] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     // TODO: fetch available time slots from `/api/time-slots` and store them via `setTimeSlots`.
+    fetch("/api/time-slots")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted) {
+          setTimeSlots(data);
+          setIsLoading(false);
+        }
+      });
     // Guard against state updates after unmount, and clear `isLoading` (via `setIsLoading`) once done.
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // TODO: build the Zod resolver from `createBookingSchema(timeSlots)`, recomputed when `timeSlots` changes.
-  const resolver = undefined;
+  const resolver = useMemo(
+    () => zodResolver(createBookingSchema(timeSlots)),
+    [timeSlots],
+  );
 
   const {
     register,
@@ -27,6 +42,7 @@ export default function BookingForm() {
   } = useForm({ resolver });
 
   const onSubmit = (data) => {
+    alert("Booking successful!");
     // TODO: on successful submit, show `alert('Booking successful!')` as described in README.md → "Components".
   };
 
@@ -37,8 +53,13 @@ export default function BookingForm() {
           Booker Name
         </label>
         {/* TODO: register this field with `register('bookerName')` */}
-        <input id="bookerName" className={styles.input} />
+        <input
+          id="bookerName"
+          className={styles.input}
+          {...register("bookerName")}
+        />
         {/* TODO: render <ErrorMessage message={errors.bookerName?.message?.toString()} /> */}
+        <ErrorMessage message={errors.bookerName?.message?.toString()} />
       </div>
 
       <div className={styles.inputGroup}>
@@ -46,8 +67,14 @@ export default function BookingForm() {
           Booker Email
         </label>
         {/* TODO: register this field with `register('bookerEmail')` */}
-        <input id="bookerEmail" className={styles.input} type="email" />
+        <input
+          id="bookerEmail"
+          className={styles.input}
+          type="email"
+          {...register("bookerEmail")}
+        />
         {/* TODO: render <ErrorMessage message={errors.bookerEmail?.message?.toString()} /> */}
+        <ErrorMessage message={errors.bookerEmail?.message?.toString()} />
       </div>
 
       <div className={styles.inputGroup}>
@@ -55,8 +82,13 @@ export default function BookingForm() {
           Event Name
         </label>
         {/* TODO: register this field with `register('eventName')` */}
-        <input id="eventName" className={styles.input} />
+        <input
+          id="eventName"
+          className={styles.input}
+          {...register("eventName")}
+        />
         {/* TODO: render <ErrorMessage message={errors.eventName?.message?.toString()} /> */}
+        <ErrorMessage message={errors.eventName?.message?.toString()} />
       </div>
 
       <div className={styles.inputGroup}>
@@ -64,8 +96,14 @@ export default function BookingForm() {
           Event Date
         </label>
         {/* TODO: register this field with `register('eventDate')` */}
-        <input id="eventDate" className={styles.input} type="date" />
+        <input
+          id="eventDate"
+          className={styles.input}
+          type="date"
+          {...register("eventDate")}
+        />
         {/* TODO: render <ErrorMessage message={errors.eventDate?.message?.toString()} /> */}
+        <ErrorMessage message={errors.eventDate?.message?.toString()} />
       </div>
 
       <div className={styles.inputGroup}>
@@ -73,8 +111,14 @@ export default function BookingForm() {
           Number of Guests
         </label>
         {/* TODO: register this field with `register('numberOfGuests')` */}
-        <input id="numberOfGuests" className={styles.input} type="number" />
+        <input
+          id="numberOfGuests"
+          className={styles.input}
+          type="number"
+          {...register("numberOfGuests", { valueAsNumber: true })}
+        />
         {/* TODO: render <ErrorMessage message={errors.numberOfGuests?.message?.toString()} /> */}
+        <ErrorMessage message={errors.numberOfGuests?.message?.toString()} />
       </div>
 
       <div className={styles.inputGroup}>
@@ -82,7 +126,11 @@ export default function BookingForm() {
           Time Slot
         </label>
         {/* TODO: register this field with `register('timeSlot')` */}
-        <select id="timeSlot" className={styles.input}>
+        <select
+          id="timeSlot"
+          className={styles.input}
+          {...register("timeSlot")}
+        >
           <option value="">Select a time slot</option>
           {timeSlots.map((slot) => (
             <option key={slot} value={slot}>
@@ -91,8 +139,11 @@ export default function BookingForm() {
           ))}
         </select>
         {isLoading && <p>Loading time slots...</p>}
-        {!isLoading && timeSlots.length === 0 && <p>No time slots available.</p>}
+        {!isLoading && timeSlots.length === 0 && (
+          <p>No time slots available.</p>
+        )}
         {/* TODO: render <ErrorMessage message={errors.timeSlot?.message?.toString()} /> */}
+        <ErrorMessage message={errors.timeSlot?.message?.toString()} />
       </div>
 
       <div className={styles.inputGroup}>
@@ -100,8 +151,14 @@ export default function BookingForm() {
           Event Link (Online)
         </label>
         {/* TODO: register this field with `register('eventLink')` */}
-        <input id="eventLink" className={styles.input} type="url" />
+        <input
+          id="eventLink"
+          className={styles.input}
+          type="url"
+          {...register("eventLink")}
+        />
         {/* TODO: render <ErrorMessage message={errors.eventLink?.message?.toString()} /> */}
+        <ErrorMessage message={errors.eventLink?.message?.toString()} />
       </div>
 
       <button className={styles.button} type="submit">
